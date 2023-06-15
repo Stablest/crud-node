@@ -1,9 +1,21 @@
 import { configDotenv } from "dotenv";
 import { app } from "./app";
+import mongoose from "mongoose";
 configDotenv();
 
-const port = process.env.port;
+const port = process.env.port || 3000;
+const mongoUri = process.env.MONGO_URI || "";
 
-app.listen(port, () => {
-  console.log("Server is listening on port ", port);
-});
+async function start() {
+  try {
+    await mongoose.connect(mongoUri);
+    console.log("Connected to database");
+    app.listen(port, () => {
+      console.log("Server is listening on port", port);
+    });
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+start();
