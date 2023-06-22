@@ -11,7 +11,6 @@ function errorHandler(
 ) {
   if (!(err instanceof Error))
     return res.status(500).json({ message: "Something went wrong try again" });
-
   let newError: { statusCode: number; message: null | string } = {
     statusCode: 500,
     message: "Something went wrong try again",
@@ -25,7 +24,7 @@ function errorTypeResponse(
   newError: { statusCode: number; message: null | string }
 ) {
   if (err instanceof CustomAPIError) {
-    newError.statusCode = 500;
+    newError.statusCode = err.statusCode ?? 500;
     newError.message = err.message || "Something went wrong try again";
     return newError;
   }
@@ -34,6 +33,11 @@ function errorTypeResponse(
     newError.statusCode = 400;
     newError.message = err.message || "Something went wrong try again";
     return newError;
+  }
+
+  if (err instanceof SyntaxError) {
+    newError.statusCode = 400;
+    newError.message = err.message;
   }
 
   if (err instanceof MongoServerError) {
