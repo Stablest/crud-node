@@ -6,15 +6,15 @@ import {
   updateUser,
   deleteUser,
 } from "../controllers/users";
-import { bodyCheck } from "../middlewares/body-check";
+import { bodyExists } from "../middlewares/body-exists";
 
 const userRouter = express.Router();
 
-userRouter.route("/").get(getAllUsers).post(bodyCheck, createUser);
+userRouter.route("/").get(getAllUsers).post(bodyExists, createUser);
 userRouter
   .route("/:id")
   .get(getUser)
-  .patch(bodyCheck, updateUser)
+  .patch(bodyExists, updateUser)
   .delete(deleteUser);
 
 export { userRouter };
