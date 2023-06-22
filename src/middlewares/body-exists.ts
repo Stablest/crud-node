@@ -1,12 +1,12 @@
 import express, { NextFunction } from "express";
-import { IUser } from "../interfaces/IUser";
+import { BadRequestError } from "../errors/bad-request";
 
-export function bodyCheck<T>(
+export function bodyExists(
   req: express.Request,
   res: express.Response,
   next: NextFunction
 ) {
   if (Object.keys(req.body).length === 0)
-    return res.status(400).send("No body was found");
+    throw new BadRequestError("Please provide a JSON body");
   next();
 }
