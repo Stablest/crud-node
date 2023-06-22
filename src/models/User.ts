@@ -2,6 +2,8 @@ import mongoose from "mongoose";
 import { IUserInstance } from "../interfaces/IUser";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { configDotenv } from "dotenv";
+configDotenv();
 
 const UserSchema = new mongoose.Schema<IUserInstance>({
   name: { type: String, required: [true, "Please provide a name"] },
@@ -11,6 +13,7 @@ const UserSchema = new mongoose.Schema<IUserInstance>({
     unique: true,
   },
   password: { type: String, required: [true, "Please provide a password"] },
+  permission: { type: Number, default: 0 },
 });
 
 UserSchema.pre("save", async function () {
@@ -19,11 +22,17 @@ UserSchema.pre("save", async function () {
 });
 
 UserSchema.methods.createJWT = function () {
-  return jwt.sign({ id: this._id }, "asasasac", { expiresIn: "30d" });
+  return jwt.sign({ id: this._id }, process.env.JWT_SECRET as string, {
+    expiresIn: "30d",
+  });
 };
 
 UserSchema.methods.comparePassword = async function (passwordReceived: string) {
-  bcrypt.compare(this.password, passwordReceived);
+  const isPasswordCorrect = await bcrypt.compare(
+    passwordReceived,
+    this.password
+  );
+  return isPasswordCorrect;
 };
 
 const userModel = mongoose.model("User", UserSchema);
