@@ -13,13 +13,15 @@ async function getAllUsers(req: express.Request, res: express.Response) {
 
 async function createUser(
   req: express.Request<any, any, IUser>,
-  res: express.Response
+  res: express.Response,
+  next: express.NextFunction
 ) {
   try {
     const newUser = await userModel.create({ ...req.body });
-    res.status(201).json({ newUser });
-  } catch (e) {
-    return res.status(500).json({ error: e });
+    const newToken = newUser.createJWT();
+    res.status(201).json({ user: { id: newUser._id }, token: newToken });
+  } catch (err: unknown) {
+    next(err);
   }
 }
 
