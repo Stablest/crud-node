@@ -22,9 +22,13 @@ UserSchema.pre("save", async function () {
 });
 
 UserSchema.methods.createJWT = function () {
-  return jwt.sign({ id: this._id }, process.env.JWT_SECRET as string, {
-    expiresIn: "30d",
-  });
+  return jwt.sign(
+    { id: this._id, permission: this.permission },
+    process.env.JWT_SECRET as string,
+    {
+      expiresIn: "30d",
+    }
+  );
 };
 
 UserSchema.methods.comparePassword = async function (passwordReceived: string) {
