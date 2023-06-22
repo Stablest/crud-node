@@ -9,5 +9,5 @@ export interface IUser {
 
 export interface IUserInstance extends IUser, Document {
   createJWT: () => string;
-  comparePassword: (passwordReceived: string) => boolean;
+  comparePassword: (passwordReceived: string) => Promise<boolean>;
 }
