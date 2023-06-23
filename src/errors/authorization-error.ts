@@ -3,7 +3,7 @@ import { CustomAPIError } from "./custom-api-error";
 class AuthorizationError extends CustomAPIError {
   constructor(message: string) {
     super(message);
-    this.statusCode = 401;
+    this.statusCode = 403;
   }
 }
 
