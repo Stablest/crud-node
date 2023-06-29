@@ -38,7 +38,7 @@ async function registerUser(
   next: express.NextFunction
 ) {
   try {
-    const user = await userModel.create({ ...req.body });
+    const user = await userModel.create({ ...req.body, permission: 0 });
     const token = user.createJWT();
     const responseObject: ITokenResponse = {
       user: { id: user._id, permission: user.permission },
