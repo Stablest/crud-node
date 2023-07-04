@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { IUserInstance } from "../interfaces/IUser";
+import { IUserInstance } from "../utils/interfaces/IUser";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { configDotenv } from "dotenv";
@@ -13,7 +13,6 @@ const UserSchema = new mongoose.Schema<IUserInstance>({
     unique: true,
   },
   password: { type: String, required: [true, "Please provide a password"] },
-  permission: { type: Number, default: 0 },
 });
 
 UserSchema.pre("save", async function () {
@@ -41,4 +40,4 @@ UserSchema.methods.comparePassword = async function (passwordReceived: string) {
 
 const userModel = mongoose.model("User", UserSchema);
 
-export { userModel };
+export { userModel, UserSchema };
