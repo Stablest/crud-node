@@ -2,8 +2,8 @@ import express from "express";
 import jwt from "jsonwebtoken";
 import { AuthenticationError } from "../errors/authentication-error";
 import { configDotenv } from "dotenv";
-import { IUser } from "../interfaces/IUser";
-import { ITokenUser } from "../interfaces/IToken";
+import { IUser } from "../utils/interfaces/IUser";
+import { ITokenUser } from "../utils/interfaces/IToken";
 configDotenv();
 
 function authentication(
@@ -11,15 +11,15 @@ function authentication(
   res: express.Response,
   next: express.NextFunction
 ) {
-  if (
-    !req.headers.authorization ||
-    !req.headers.authorization.startsWith("Bearer")
-  )
-    throw new AuthenticationError(
-      "Please provide a valid authentication token"
-    );
-  const token = req.headers.authorization.split(" ")[1];
   try {
+    if (
+      !req.headers.authorization ||
+      !req.headers.authorization.startsWith("Bearer")
+    )
+      throw new AuthenticationError(
+        "Please provide a valid authentication token"
+      );
+    const token = req.headers.authorization.split(" ")[1];
     const tokenPayload = jwt.verify(
       token,
       process.env.JWT_SECRET as string
@@ -27,7 +27,6 @@ function authentication(
 
     const tokenUser: ITokenUser = {
       id: tokenPayload.id,
-      permission: tokenPayload.permission,
     };
     res.locals.user = tokenUser;
     next();
