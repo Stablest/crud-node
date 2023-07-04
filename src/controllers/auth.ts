@@ -2,9 +2,9 @@ import express from "express";
 import { AuthenticationError } from "../errors/authentication-error";
 import { configDotenv } from "dotenv";
 import { userModel } from "../models/User";
-import { IUser } from "../interfaces/IUser";
+import { IUser } from "../utils/interfaces/IUser";
 import { BadRequestError } from "../errors/bad-request";
-import { ITokenResponse } from "../interfaces/IToken";
+import { ITokenResponse } from "../utils/interfaces/IToken";
 configDotenv();
 
 async function loginUser(
@@ -23,7 +23,7 @@ async function loginUser(
       throw new AuthenticationError("Invalid email or password");
     const token = user.createJWT();
     const responseObject: ITokenResponse = {
-      user: { id: user._id, permission: user.permission },
+      user: { id: user._id },
       token,
     };
     return res.status(200).json(responseObject);
@@ -38,10 +38,10 @@ async function registerUser(
   next: express.NextFunction
 ) {
   try {
-    const user = await userModel.create({ ...req.body, permission: 0 });
+    const user = await userModel.create({ ...req.body });
     const token = user.createJWT();
     const responseObject: ITokenResponse = {
-      user: { id: user._id, permission: user.permission },
+      user: { id: user._id },
       token,
     };
     res.status(201).json(responseObject);
