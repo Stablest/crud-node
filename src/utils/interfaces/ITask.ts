@@ -9,9 +9,3 @@ export interface ITask {
 }
 
 export interface ITaskInstance extends Document, ITask {}
-
-export enum TaskStatus {
-  done = "done",
-  pending = "pending",
-  testing = "testing",
-}
