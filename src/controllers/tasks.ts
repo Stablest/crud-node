@@ -22,13 +22,19 @@ async function createTask(
   next: express.NextFunction
 ) {
   try {
-    const { name, responsibleUserId, done } = req.body;
+    const { name, responsibleUserId, description, done, label } = req.body;
     if (!name || !responsibleUserId)
       throw new BadRequestError("Please provide name and responsibleUserId");
     const taskedUser = await userModel.findById(responsibleUserId);
     if (!taskedUser)
       throw new BadRequestError("Please provide a valid user ID");
-    const newTask = await taskModel.create({ name, responsibleUserId, done });
+    const newTask = await taskModel.create({
+      name,
+      responsibleUserId,
+      description,
+      done,
+      label,
+    });
     return res.status(201).json(newTask);
   } catch (err) {
     next(err);
@@ -43,7 +49,7 @@ async function updateTask(
   try {
     const { id } = req.params;
     if (!id) throw new BadRequestError("Please provide a valid id");
-    const { name, responsibleUserId, done } = req.body;
+    const { name, responsibleUserId, description, done, label } = req.body;
     if (!name && !responsibleUserId && !done)
       throw new BadRequestError("Please provide valid properties");
     const updatedTask = await taskModel.findByIdAndUpdate(
@@ -51,7 +57,9 @@ async function updateTask(
       {
         name,
         responsibleUserId,
+        description,
         done,
+        label,
       },
       { new: true }
     );
@@ -71,7 +79,7 @@ async function deleteTask(
     if (!id) throw new BadRequestError("Please provide a valid id");
     const deletedTask = await taskModel.findByIdAndRemove(id);
     if (!deletedTask)
-      throw new BadRequestError("Task already deleted or didn't exist");
+      throw new BadRequestError("Task already deleted or doesn't exist");
     return res.status(200).json(deletedTask);
   } catch (err) {
     next(err);
