@@ -4,6 +4,22 @@ import { orgModel } from "../models/Organization";
 import { IOrganizationInstance } from "../utils/interfaces/IOrganization";
 import { UnknownError } from "../errors/unknown-error";
 
+async function getAllPublicOrganization(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const orgs = await orgModel.find(
+      { isPrivate: false },
+      "_id name isPrivate"
+    );
+    return res.status(200).json(orgs);
+  } catch (err) {
+    next(err);
+  }
+}
+
 async function createOrganization(
   req: Request,
   res: Response,
@@ -39,4 +55,28 @@ async function deleteOrganization(
   }
 }
 
-export { createOrganization, deleteOrganization };
+async function updateOrganizationInfo(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const org: IOrganizationInstance = res.locals.orgDoc;
+    const { name, isPrivate } = req.body;
+    const updateSucess = await org.updateOne(
+      { name, isPrivate },
+      { new: true }
+    );
+    if (!updateSucess) throw new UnknownError();
+    return res.status(200).json(updateSucess);
+  } catch (err) {
+    next(err);
+  }
+}
+
+export {
+  getAllPublicOrganization,
+  createOrganization,
+  deleteOrganization,
+  updateOrganizationInfo,
+};
