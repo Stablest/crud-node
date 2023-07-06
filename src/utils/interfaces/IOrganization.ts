@@ -30,6 +30,7 @@ export interface IOrganizationInstance extends Document, IOrganizationModel {
   checkIsAdmin: (userId: string) => boolean;
   checkIsRegistered: (userId: string) => boolean;
   checkIsTaskIncluded: (taskId: string) => boolean;
+  checkIsInviteIncluded: (inviteId: string) => boolean;
   removeFromArray: (
     key: OrganizationRemoveFromArray,
     id: string
