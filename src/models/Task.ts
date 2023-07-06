@@ -1,13 +1,13 @@
 import mongoose from "mongoose";
 import { ITaskInstance } from "../utils/interfaces/ITask";
+import { TaskStatusEnum } from "../utils/enums/TaskEnum";
 
 const taskSchema = new mongoose.Schema<ITaskInstance>({
   name: {
     type: String,
     requided: [true, "Please provide a name"],
-    unique: true,
   },
-  responsibleUsersId: [
+  responsibleUsers: [
     {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -16,10 +16,12 @@ const taskSchema = new mongoose.Schema<ITaskInstance>({
   description: { type: String, default: "No description" },
   status: {
     type: String,
-    enum: ["done", "pending", "testing"],
-    default: "pending",
+    enum: TaskStatusEnum,
+    default: TaskStatusEnum.PENDING,
   },
   label: [{ type: String }],
+  org: { type: mongoose.Schema.Types.ObjectId, ref: "Organization" },
+  createdAt: { type: Date, default: Date.now() },
 });
 
 const taskModel = mongoose.model("Task", taskSchema);
