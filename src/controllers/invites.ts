@@ -5,6 +5,8 @@ import { inviteModel } from "../models/Invites";
 import { IInviteModel } from "../utils/interfaces/IInvite";
 import { IOrganizationInstance } from "../utils/interfaces/IOrganization";
 import mongoose from "mongoose";
+import { UnknownError } from "../errors/unknown-error";
+import { OrganizationRemoveFromArray } from "../utils/enums/Organization";
 
 async function getAllOrgInvites(
   req: Request,
@@ -27,14 +29,12 @@ async function createNewInvite(
 ) {
   try {
     const org: IOrganizationInstance = res.locals.orgDoc;
-    const { message } = req.body;
+    const { title, message } = req.body;
     if (!message) throw new BadRequestError("Please provide a message");
-
-    console.log(org.invites);
-    console.log(org.invites.length);
     if (!(org.invites.length <= 5))
       throw new AuthorizationError("Max invites reached");
     const newInvite: IInviteModel = {
+      title: title,
       org: org._id,
       message: message,
       createdAt: new Date(),
@@ -50,6 +50,25 @@ async function createNewInvite(
 
 async function updateInvite(req: Request, res: Response, next: NextFunction) {
   try {
+    const org: IOrganizationInstance = res.locals.orgDoc;
+    const { inviteId } = req.params;
+    if (!inviteId)
+      throw new BadRequestError("Please provie a valid inviteId parameter");
+    const { title, message } = req.body;
+    const newUpdateInvite: IInviteModel = {
+      title: title,
+      org: org._id,
+      message: message,
+      createdAt: new Date(),
+      createdBy: new mongoose.Types.ObjectId(res.locals.user.id),
+    };
+    const updatedInvite = await inviteModel.findByIdAndUpdate(
+      inviteId,
+      newUpdateInvite,
+      { new: true }
+    );
+    if (!updatedInvite) throw new UnknownError();
+    return res.status(200).json(updatedInvite);
   } catch (err) {
     next(err);
   }
@@ -61,6 +80,11 @@ async function deleteInvite(req: Request, res: Response, next: NextFunction) {
     const { inviteId } = req.params;
     if (!inviteId)
       throw new BadRequestError("Please provide a valid inviteId parameter");
+    const wasRemoved = await org.removeFromArray(
+      OrganizationRemoveFromArray.INVITES,
+      inviteId
+    );
+    if (!wasRemoved) throw new UnknownError();
     const deletedInvite = await inviteModel.findByIdAndDelete(inviteId);
     if (!deletedInvite)
       throw new BadRequestError("Invite already deleted or doesn't exist");
