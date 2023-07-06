@@ -47,6 +47,15 @@ OrgSchema.methods.checkIsTaskIncluded = function checkIsTaskIncluded(
   return false;
 };
 
+OrgSchema.methods.checkIsInviteIncluded = function checkIsInviteIncluded(
+  newInviteId: string
+) {
+  for (const inviteId of this.invites) {
+    if (newInviteId === inviteId.toString()) return true;
+  }
+  return false;
+};
+
 OrgSchema.methods.createAdmin = async function (id: string) {
   const objId = new mongoose.Types.ObjectId(id);
   this.users.push({ _id: objId, permission: 2 });
