@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import { ITaskInstance } from "../utils/interfaces/ITask";
-import { TaskStatus } from "../utils/enums/TaskEnum";
+import { TaskStatus } from "../utils/enums/Task";
 
 const taskSchema = new mongoose.Schema<ITaskInstance>({
   name: {
