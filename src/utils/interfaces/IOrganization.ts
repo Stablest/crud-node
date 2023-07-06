@@ -18,6 +18,6 @@ export interface IOrganizationUser {
 export interface IOrganizationInstance extends Document, IOrganization {
   createAdmin: (id: string) => Promise<IOrganizationInstance>;
   checkIsAdmin: (userId: string) => boolean;
-  createNewInvite: (message: string) => Promise<IInviteInstance>;
-  createNewTask: () => Promise<any>;
+  checkIsRegistered: (userId: string) => boolean;
+  checkIsTaskIncluded: (taskId: string) => boolean;
 }
