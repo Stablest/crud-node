@@ -1,9 +1,5 @@
 import mongoose from "mongoose";
 import { IOrganizationInstance } from "../utils/interfaces/IOrganization";
-import { CustomAPIError } from "../errors/custom-api-error";
-import { inviteModel } from "./Invites";
-import { IInvite } from "../utils/interfaces/IInvite";
-import { AuthorizationError } from "../errors/authorization-error";
 
 const OrgSchema = new mongoose.Schema<IOrganizationInstance>({
   name: {
@@ -23,12 +19,13 @@ const OrgSchema = new mongoose.Schema<IOrganizationInstance>({
   isPrivate: { type: Boolean },
 });
 
-OrgSchema.methods.createAdmin = async function (id: string) {
-  const objId = new mongoose.Types.ObjectId(id);
-  this.users.push({ _id: objId, permission: 2 });
-  const org = await this.save();
-  if (!org) return false;
-  return true;
+OrgSchema.methods.checkIsRegistered = function checkIsRegistered(
+  userId: string
+) {
+  for (const user of this.users) {
+    if (userId === user._id.toString()) return true;
+  }
+  return false;
 };
 
 OrgSchema.methods.checkIsAdmin = function checkIsAdmin(userId: string) {
@@ -41,23 +38,22 @@ OrgSchema.methods.checkIsAdmin = function checkIsAdmin(userId: string) {
   return false;
 };
 
-OrgSchema.methods.createNewInvite = async function createNewInvite(
-  message: string
+OrgSchema.methods.checkIsTaskIncluded = function checkIsTaskIncluded(
+  newTaskId: string
 ) {
-  if (!(this.invites.length <= 5))
-    throw new AuthorizationError("Max invites reached");
-  const newInvite: IInvite = {
-    org: this._id,
-    message: message,
-  };
-  const invite = await inviteModel.create(newInvite);
-  if (!invite) throw new CustomAPIError("Something went wrong");
-  const updatedOrg = await this.updateOne({ $push: { invites: invite._id } });
-  if (!updatedOrg) throw new CustomAPIError("Something went wrong");
-  return invite;
+  for (const taskId of this.tasks) {
+    if (newTaskId === taskId.toString()) return true;
+  }
+  return false;
 };
 
-OrgSchema.methods.createNewTask = async function createNewTask() {};
+OrgSchema.methods.createAdmin = async function (id: string) {
+  const objId = new mongoose.Types.ObjectId(id);
+  this.users.push({ _id: objId, permission: 2 });
+  const org = await this.save();
+  if (!org) return false;
+  return true;
+};
 
 const orgModel = mongoose.model("Organization", OrgSchema);
 
