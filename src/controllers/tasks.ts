@@ -1,89 +1,89 @@
-import express from "express";
-import { taskModel } from "../models/Task";
+import { NextFunction, Request, Response } from "express";
 import { BadRequestError } from "../errors/bad-request";
-import { userModel } from "../models/User";
+import { NotFoundError } from "../errors/not-found-error";
+import { taskModel } from "../models/Task";
+import { stringToMongoId } from "../utils/functions/stringToMongoId";
+import { IOrganizationInstance } from "../utils/interfaces/IOrganization";
 
-async function getAllTasks(
-  req: express.Request,
-  res: express.Response,
-  next: express.NextFunction
-) {
+async function getAllOrgTasks(req: Request, res: Response, next: NextFunction) {
   try {
-    const allTasks = await taskModel.find({});
-    return res.status(200).json({ tasks: allTasks });
+    const org: IOrganizationInstance = res.locals.orgDoc;
+    const orgTasks = (await org.populate("tasks")).tasks;
+    return res.status(200).json(orgTasks);
   } catch (err) {
     next(err);
   }
 }
 
-async function createTask(
-  req: express.Request,
-  res: express.Response,
-  next: express.NextFunction
-) {
+async function createNewTask(req: Request, res: Response, next: NextFunction) {
   try {
-    const { name, responsibleUserId, description, done, label } = req.body;
-    if (!name || !responsibleUserId)
-      throw new BadRequestError("Please provide name and responsibleUserId");
-    const taskedUser = await userModel.findById(responsibleUserId);
-    if (!taskedUser)
-      throw new BadRequestError("Please provide a valid user ID");
-    const newTask = await taskModel.create({
+    const org: IOrganizationInstance = res.locals.orgDoc;
+    const { name, responsibleUsers, description, status, label } = req.body;
+    const newTask = {
       name,
-      responsibleUserId,
+      responsibleUsers,
       description,
-      done,
+      status,
       label,
-    });
-    return res.status(201).json(newTask);
+      org: org._id,
+    };
+    if (!responsibleUsers)
+      throw new BadRequestError(
+        "Please provide a valid responsibleUsers value"
+      );
+    const task = await taskModel.create(newTask);
+    const updatedOrg = await org.updateOne({ $push: { tasks: task._id } });
+    return res.status(200).json(task);
   } catch (err) {
     next(err);
   }
 }
 
-async function updateTask(
-  req: express.Request,
-  res: express.Response,
-  next: express.NextFunction
-) {
+async function updateTask(req: Request, res: Response, next: NextFunction) {
   try {
-    const { id } = req.params;
-    if (!id) throw new BadRequestError("Please provide a valid id");
-    const { name, responsibleUserId, description, done, label } = req.body;
-    if (!name && !responsibleUserId && !done)
-      throw new BadRequestError("Please provide valid properties");
-    const updatedTask = await taskModel.findByIdAndUpdate(
-      id,
-      {
-        name,
-        responsibleUserId,
-        description,
-        done,
-        label,
-      },
+    const org: IOrganizationInstance = res.locals.orgDoc;
+    const { taskId } = req.params;
+    if (!taskId) throw new BadRequestError("Please provide a taskId value");
+    const isTaskIncluded = org.checkIsTaskIncluded(taskId);
+    if (!isTaskIncluded)
+      throw new BadRequestError("Please provide a valid taskId value");
+    const { name, responsibleUsers, description, status, label } = req.body;
+    const objIdResponsibleUsers = stringToMongoId(responsibleUsers);
+    const updatedTask = {
+      name,
+      responsibleUsers: objIdResponsibleUsers,
+      description,
+      status,
+      label,
+      org: org._id,
+    };
+    const task = await taskModel.findByIdAndUpdate(
+      taskId,
+      { ...updatedTask },
       { new: true }
     );
-    return res.status(200).json(updatedTask);
+    return res.status(200).json(task);
   } catch (err) {
     next(err);
   }
 }
 
-async function deleteTask(
-  req: express.Request,
-  res: express.Response,
-  next: express.NextFunction
-) {
+async function deleteTask(req: Request, res: Response, next: NextFunction) {
   try {
-    const { id } = req.params;
-    if (!id) throw new BadRequestError("Please provide a valid id");
-    const deletedTask = await taskModel.findByIdAndRemove(id);
-    if (!deletedTask)
-      throw new BadRequestError("Task already deleted or doesn't exist");
-    return res.status(200).json(deletedTask);
+    const org: IOrganizationInstance = res.locals.orgDoc;
+    const { taskId } = req.params;
+    if (!taskId)
+      throw new BadRequestError("Please provide a valid taskId value");
+    const isTaskIncluded = org.checkIsTaskIncluded(taskId);
+    if (!isTaskIncluded)
+      throw new BadRequestError("Please provide a valid taskId value");
+    const task = await taskModel.findByIdAndDelete(taskId);
+    if (!task)
+      throw new BadRequestError("Task already deleted or didn't exist");
+    return res.status(200).json(task);
   } catch (err) {
     next(err);
   }
 }
 
-export { getAllTasks, createTask, deleteTask, updateTask };
+export { createNewTask, updateTask, deleteTask, getAllOrgTasks };
