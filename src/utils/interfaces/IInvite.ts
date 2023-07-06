@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 export interface IInviteModel {
   org: mongoose.Types.ObjectId;
-  message: String;
+  message: string;
   createdBy: mongoose.Types.ObjectId;
   createdAt: Date;
 }
