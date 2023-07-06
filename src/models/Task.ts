@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import { ITaskInstance } from "../utils/interfaces/ITask";
-import { TaskStatusEnum } from "../utils/enums/TaskEnum";
+import { TaskStatus } from "../utils/enums/TaskEnum";
 
 const taskSchema = new mongoose.Schema<ITaskInstance>({
   name: {
@@ -16,8 +16,8 @@ const taskSchema = new mongoose.Schema<ITaskInstance>({
   description: { type: String, default: "No description" },
   status: {
     type: String,
-    enum: TaskStatusEnum,
-    default: TaskStatusEnum.PENDING,
+    enum: TaskStatus,
+    default: TaskStatus.PENDING,
   },
   label: [{ type: String }],
   org: { type: mongoose.Schema.Types.ObjectId, ref: "Organization" },
