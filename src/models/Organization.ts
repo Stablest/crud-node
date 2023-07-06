@@ -55,6 +55,17 @@ OrgSchema.methods.createAdmin = async function (id: string) {
   return true;
 };
 
+OrgSchema.methods.removeFromArray = async function (key: string, id: string) {
+  const objId = new mongoose.Types.ObjectId(id);
+  for (const value of this[key]) {
+    if (id === value.toString()) {
+      const updated = await this.updateOne({ $pull: { invites: objId } });
+      if (updated) return true;
+    }
+  }
+  return false;
+};
+
 const orgModel = mongoose.model("Organization", OrgSchema);
 
 export { orgModel };
