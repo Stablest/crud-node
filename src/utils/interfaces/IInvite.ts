@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 
 export interface IInviteModel {
+  title: string;
   org: mongoose.Types.ObjectId;
   message: string;
   createdBy: mongoose.Types.ObjectId;
