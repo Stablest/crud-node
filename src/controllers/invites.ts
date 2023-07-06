@@ -55,6 +55,9 @@ async function updateInvite(req: Request, res: Response, next: NextFunction) {
     if (!inviteId)
       throw new BadRequestError("Please provie a valid inviteId parameter");
     const { title, message } = req.body;
+    const isInviteIncluded = org.checkIsInviteIncluded(inviteId);
+    if (!isInviteIncluded)
+      throw new BadRequestError("Please provide a valid inviteId param");
     const newUpdateInvite: IInviteModel = {
       title: title,
       org: org._id,
@@ -80,6 +83,9 @@ async function deleteInvite(req: Request, res: Response, next: NextFunction) {
     const { inviteId } = req.params;
     if (!inviteId)
       throw new BadRequestError("Please provide a valid inviteId parameter");
+    const isInviteIncluded = org.checkIsInviteIncluded(inviteId);
+    if (!isInviteIncluded)
+      throw new BadRequestError("Please provide a valid inviteId param");
     const wasRemoved = await org.removeFromArray(
       OrganizationRemoveFromArray.INVITES,
       inviteId
